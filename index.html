@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuyến Tàu Tương Lai 2070</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS cho Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- QRCode.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050a15;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0, 243, 255, 0.05), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(176, 38, 255, 0.05), transparent 25%);
+            color: #e2e8f0;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .font-sci-fi { font-family: 'Orbitron', sans-serif; }
+
+        /* Neon Effects */
+        .neon-text-blue { color: #00f3ff; text-shadow: 0 0 8px rgba(0, 243, 255, 0.6); }
+        .neon-text-purple { color: #b026ff; text-shadow: 0 0 8px rgba(176, 38, 255, 0.6); }
+        
+        .neon-box {
+            background: rgba(10, 15, 30, 0.85);
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.15), inset 0 0 15px rgba(0, 243, 255, 0.1);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+        }
+
+        .btn-neon {
+            background: linear-gradient(45deg, #0f172a, #1e293b);
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .btn-neon:hover:not(:disabled) {
+            background: #00f3ff;
+            color: #050a15;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
+        }
+        .btn-neon:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .btn-neon-purple { border-color: #b026ff; color: #b026ff; }
+        .btn-neon-purple:hover:not(:disabled) { background: #b026ff; color: #fff; box-shadow: 0 0 20px rgba(176, 38, 255, 0.6); }
+        
+        .btn-neon-gold { border-color: #fbbf24; color: #fbbf24; }
+        .btn-neon-gold:hover:not(:disabled) { background: #fbbf24; color: #000; box-shadow: 0 0 20px rgba(251, 191, 36, 0.6); }
+
+        /* Options */
+        .option-btn {
+            background: linear-gradient(135deg, #0f172a, #162447); border: 1px solid #3a86ff; color: #e2e8f0;
+            transition: all 0.2s ease; text-align: left; border-radius: 8px; position: relative;
+        }
+        .option-btn:hover { border-color: #00f3ff; box-shadow: 0 0 15px rgba(0, 243, 255, 0.4); transform: translateY(-2px); }
+        .option-btn.correct { background: rgba(34, 197, 94, 0.9); border-color: #22c55e; color: #fff; box-shadow: 0 0 20px rgba(34, 197, 94, 0.6); font-weight: 600; }
+        .option-btn.wrong { background: rgba(239, 68, 68, 0.9); border-color: #ef4444; color: #fff; box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); animation: shake 0.4s ease-in-out; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+
+        /* Progress Bar */
+        .progress-container { width: 100%; height: 20px; background: #0f172a; border-radius: 10px; border: 1px solid #3a86ff; position: relative; overflow: hidden; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
+        #progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #00f3ff, #22c55e); transition: width 0.5s ease-out; box-shadow: 0 0 15px #22c55e; }
+
+        /* Floating Points Animation */
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-80px) scale(1.5); } }
+        .floating-points { position: absolute; color: #22c55e; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 28px; text-shadow: 0 0 15px #22c55e, 0 0 5px #fff; animation: floatUp 1.2s ease-out forwards; pointer-events: none; z-index: 50; }
+
+        /* Utility */
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Chest Box Styling */
+        .chest-box {
+            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            border: 2px solid #b026ff;
+            box-shadow: 0 0 15px rgba(176, 38, 255, 0.3), inset 0 0 10px rgba(176, 38, 255, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 120px;
+            position: relative;
+            overflow: hidden;
+        }
+        .chest-box:hover:not(.opened) {
+            box-shadow: 0 0 25px rgba(176, 38, 255, 0.7), inset 0 0 20px rgba(176, 38, 255, 0.4);
+            transform: scale(1.05);
+        }
+        .chest-box.opened {
+            background: #050a15;
+            border-color: #334155;
+            box-shadow: none;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .chest-icon { font-size: 3rem; text-shadow: 0 0 10px rgba(176,38,255,0.8); }
+        .chest-box.opened .chest-icon { display: none; }
+        
+        #qrcode-container img { margin: 0 auto; border: 4px solid #00f3ff; border-radius: 8px; padding: 5px; background: #fff; }
+    </style>
+</head>
+<body class="p-4 w-full h-full relative">
+
+    <div class="w-full max-w-5xl mx-auto relative">
+
+        <!-- ================= 1. MENU SCREEN ================= -->
+        <div id="menu-screen" class="neon-box p-8 md:p-12 text-center fade-in">
+            <h2 class="font-sci-fi text-xl text-purple-400 mb-2 tracking-widest uppercase">Trạm Điều Hành</h2>
+            <h1 class="font-sci-fi text-4xl md:text-6xl font-black neon-text-blue mb-8 uppercase">Chuyến Tàu<br>Tương Lai 2070</h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center mb-8">
+                <!-- QR Code -->
+                <div class="flex flex-col items-center col-span-1">
+                    <p class="text-xs font-sci-fi text-cyan-400 mb-2">QUÉT MÃ ĐỂ KẾT NỐI</p>
+                    <div id="qrcode-container" class="w-32 h-32"></div>
+                </div>
+
+                <!-- Input & Start -->
+                <div class="col-span-1 md:col-span-2 flex flex-col gap-4">
+                    <input type="text" id="player-name" placeholder="NHẬP TÊN PHI HÀNH GIA..." class="w-full bg-slate-900 border-2 border-cyan-500 text-cyan-300 font-sci-fi p-4 rounded-lg focus:outline-none focus:border-purple-500 text-center text-lg uppercase tracking-wider">
+                    <button onclick="showIntro()" class="btn-neon px-8 py-4 text-xl font-bold w-full shadow-[0_0_15px_#00f3ff]">🚀 BẮT ĐẦU NHIỆM VỤ</button>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button onclick="showDatabase()" class="btn-neon px-2 py-3 font-bold text-xs border-cyan-600 text-cyan-500">💾 DỮ LIỆU</button>
+                        <button onclick="requirePassword('leaderboard')" class="btn-neon btn-neon-purple px-2 py-3 font-bold text-xs">🏆 BẢNG XẾP HẠNG</button>
+                        <button onclick="requirePassword('chests')" class="btn-neon btn-neon-gold px-2 py-3 font-bold text-xs">🎁 RƯƠNG MAY MẮN</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 2. INTRO SCREEN ================= -->
+        <div id="intro-screen" class="neon-box p-8 md:p-12 hidden fade-in">
+            <h2 class="font-sci-fi text-2xl text-center neon-text-blue mb-8 border-b border-cyan-800 pb-4">KẾT NỐI KHÔNG GIAN: 2070 ➔ 2026</h2>
+            <div class="space-y-6 mb-10 text-sm md:text-base leading-relaxed h-[250px]">
+                <div class="border-l-4 border-purple-500 bg-purple-900/10 p-4 rounded-r-lg">
+                    <p class="font-sci-fi font-bold text-purple-400 mb-1">KỸ SƯ NOVA:</p>
+                    <p id="dialogue-1" class="text-slate-200 min-h-[48px]"></p>
+                </div>
+                <div class="border-l-4 border-cyan-500 bg-cyan-900/10 p-4 rounded-r-lg">
+                    <p class="font-sci-fi font-bold text-cyan-400 mb-1">THUYỀN TRƯỞNG KIAN:</p>
+                    <p id="dialogue-2" class="text-slate-200 min-h-[48px]"></p>
+                </div>
+            </div>
+            <div class="text-center">
+                <button id="btn-skip-intro" onclick="startQuiz()" class="btn-neon px-10 py-4 text-lg font-bold w-full md:w-auto hidden">⚡ TIẾP NHẬN NHIỆM VỤ</button>
+            </div>
+        </div>
+
+        <!-- ================= 3. QUIZ SCREEN ================= -->
+        <div id="quiz-screen" class="neon-box p-6 md:p-10 hidden fade-in flex flex-col relative">
+            <button onclick="openSettings()" class="absolute top-4 right-4 text-slate-400 hover:text-cyan-400 text-2xl transition-colors">⚙️</button>
+
+            <div class="flex justify-between items-end border-b border-slate-700 pb-4 mb-6 pr-8">
+                <div>
+                    <h3 class="font-sci-fi text-cyan-400 text-sm">HỆ THỐNG ĐIỀU HƯỚNG</h3>
+                    <p id="question-counter" class="text-slate-300 font-mono text-sm">Câu hỏi 1 / 10</p>
+                </div>
+                <div class="text-right">
+                    <h3 class="font-sci-fi text-green-400 text-sm">ĐIỂM SỐ HIỆN TẠI</h3>
+                    <p id="score-display" class="font-mono text-white text-xl font-bold">Điểm: 0</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/60 border border-slate-600 rounded-lg p-6 mb-8 min-h-[120px] flex items-center justify-center relative" id="q-container">
+                <h2 id="question-text" class="text-xl md:text-2xl text-center font-medium">Đang tải dữ liệu...</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <button class="option-btn p-4 text-lg" onclick="checkAnswer(0)" id="btn-0">A</button>
+                <button class="option-btn p-4 text-lg" onclick="checkAnswer(1)" id="btn-1">B</button>
+                <button class="option-btn p-4 text-lg" onclick="checkAnswer(2)" id="btn-2">C</button>
+                <button class="option-btn p-4 text-lg" onclick="checkAnswer(3)" id="btn-3">D</button>
+            </div>
+
+            <div class="mt-auto">
+                <div class="flex justify-between text-xs font-sci-fi text-slate-400 mb-2">
+                    <span>NĂNG LƯỢNG LÕI TÀU</span><span id="progress-text">0%</span>
+                </div>
+                <div class="progress-container"><div id="progress-fill"></div></div>
+            </div>
+        </div>
+
+        <!-- ================= 4. END SCREEN ================= -->
+        <div id="end-screen" class="neon-box p-8 md:p-12 text-center hidden fade-in">
+            <h1 class="font-sci-fi text-4xl md:text-5xl font-black neon-text-blue mb-4 uppercase">NHIỆM VỤ HOÀN THÀNH!</h1>
+            <p class="text-lg text-slate-300 mb-8 max-w-xl mx-auto">Năng lượng đã được truyền tải thành công về năm 2070. Trái Đất đã được cứu!</p>
+            
+            <div class="bg-slate-900 border border-green-500 rounded-xl p-8 mb-10 inline-block shadow-[0_0_30px_rgba(34,197,94,0.3)]">
+                <p class="font-sci-fi text-green-400 mb-2">TỔNG ĐIỂM ĐẠT ĐƯỢC</p>
+                <p id="final-points" class="text-6xl font-black text-green-500 font-mono">0</p>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button onclick="requirePassword('leaderboard')" class="btn-neon btn-neon-purple px-8 py-4 font-bold">🏆 BẢNG XẾP HẠNG</button>
+                <button onclick="returnToMenu()" class="btn-neon px-8 py-4 font-bold">🏠 TRANG CHỦ</button>
+            </div>
+        </div>
+
+        <!-- ================= 5. DATABASE SCREEN ================= -->
+        <div id="db-screen" class="neon-box p-6 md:p-8 hidden fade-in flex flex-col h-[80vh]">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="font-sci-fi text-2xl text-cyan-400">CƠ SỞ DỮ LIỆU CÂU HỎI</h2>
+                <button onclick="returnToMenu()" class="text-slate-400 hover:text-white font-bold">✕ ĐÓNG</button>
+            </div>
+            <div class="flex flex-wrap gap-3 mb-4">
+                <label for="excel-upload" class="btn-neon px-4 py-2 text-sm cursor-pointer">📁 TẢI FILE EXCEL</label>
+                <input type="file" id="excel-upload" accept=".xlsx, .xls" class="hidden" onchange="handleExcelUpload(event)">
+                <button onclick="openTextImportModal()" class="btn-neon btn-neon-purple px-4 py-2 text-sm">📝 THÊM BẰNG VĂN BẢN</button>
+                <button onclick="clearDatabase()" class="btn-neon border-red-500 text-red-400 hover:bg-red-500 px-4 py-2 text-sm ml-auto">🗑 XÓA TOÀN BỘ</button>
+            </div>
+            <div class="flex-1 overflow-y-auto bg-slate-900/50 border border-slate-700 rounded-lg p-4" id="db-list"></div>
+        </div>
+
+        <!-- ================= 6. LEADERBOARD SCREEN ================= -->
+        <div id="leaderboard-screen" class="neon-box p-6 md:p-10 text-center hidden fade-in">
+            <h1 class="font-sci-fi text-3xl font-black neon-text-purple mb-6">BẢNG XẾP HẠNG (ADMIN)</h1>
+            <div class="bg-slate-900/90 border border-purple-500 rounded-xl p-4 mb-8 max-h-[50vh] overflow-y-auto">
+                <table class="w-full text-left text-sm md:text-base">
+                    <thead class="font-sci-fi text-cyan-400 border-b border-cyan-800">
+                        <tr><th class="pb-2">#</th><th class="pb-2">TÊN</th><th class="pb-2 text-right">ĐIỂM SỐ</th></tr>
+                    </thead>
+                    <tbody id="lb-body" class="text-slate-200"></tbody>
+                </table>
+            </div>
+            <div class="flex justify-center gap-4">
+                <button onclick="returnToMenu()" class="btn-neon px-6 py-2 font-bold">🏠 TRANG CHỦ</button>
+                <button onclick="clearLeaderboard()" class="btn-neon border-red-500 text-red-400 hover:bg-red-500 px-6 py-2 font-bold">🗑 XÓA DỮ LIỆU</button>
+            </div>
+        </div>
+
+        <!-- ================= 7. LUCKY CHESTS SCREEN ================= -->
+        <div id="chest-screen" class="neon-box p-6 md:p-8 hidden fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="font-sci-fi text-2xl text-yellow-400 uppercase">Khu Vực Rương May Mắn</h2>
+                <div class="flex gap-4">
+                    <button onclick="requirePassword('reset-chests')" class="btn-neon border-red-500 text-red-400 hover:bg-red-500 px-4 py-2 font-bold text-sm">🔄 LÀM MỚI</button>
+                    <button onclick="returnToMenu()" class="text-slate-400 hover:text-white font-bold">✕ THOÁT</button>
+                </div>
+            </div>
+
+            <!-- Bảng điểm 4 Đội -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-slate-900 border border-cyan-600 rounded p-3 text-center">
+                    <div class="font-sci-fi text-cyan-400 mb-1 text-sm">ĐỘI 1</div>
+                    <input type="number" id="score-t1" class="w-full bg-transparent text-white text-center font-bold text-xl outline-none" value="0">
+                </div>
+                <div class="bg-slate-900 border border-purple-600 rounded p-3 text-center">
+                    <div class="font-sci-fi text-purple-400 mb-1 text-sm">ĐỘI 2</div>
+                    <input type="number" id="score-t2" class="w-full bg-transparent text-white text-center font-bold text-xl outline-none" value="0">
+                </div>
+                <div class="bg-slate-900 border border-green-600 rounded p-3 text-center">
+                    <div class="font-sci-fi text-green-400 mb-1 text-sm">ĐỘI 3</div>
+                    <input type="number" id="score-t3" class="w-full bg-transparent text-white text-center font-bold text-xl outline-none" value="0">
+                </div>
+                <div class="bg-slate-900 border border-yellow-600 rounded p-3 text-center">
+                    <div class="font-sci-fi text-yellow-400 mb-1 text-sm">ĐỘI 4</div>
+                    <input type="number" id="score-t4" class="w-full bg-transparent text-white text-center font-bold text-xl outline-none" value="0">
+                </div>
+            </div>
+
+            <!-- Điều khiển Lượt mở -->
+            <div class="flex items-center gap-4 mb-8 bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                <label class="font-sci-fi text-slate-300">ĐANG MỞ RƯƠNG:</label>
+                <select id="chest-team-select" class="bg-slate-800 border border-cyan-500 text-white p-2 rounded outline-none flex-1 font-bold" onchange="updateChestTurnInfo()">
+                    <option value="1">ĐỘI 1</option>
+                    <option value="2">ĐỘI 2</option>
+                    <option value="3">ĐỘI 3</option>
+                    <option value="4">ĐỘI 4</option>
+                </select>
+                <div class="font-mono text-cyan-300" id="chest-turn-info">Đã mở: 0/2</div>
+            </div>
+
+            <!-- Lưới Rương (10 Rương) -->
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4" id="chest-grid">
+                <!-- JS Generated Chests -->
+            </div>
+        </div>
+
+        <!-- ================= MODALS ================= -->
+        <!-- Password Modal -->
+        <div id="password-modal" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4">
+            <div class="bg-slate-900 border-2 border-yellow-500 p-6 rounded-xl max-w-sm w-full text-center shadow-[0_0_20px_#fbbf24]">
+                <h3 class="font-sci-fi text-yellow-400 text-xl mb-2">YÊU CẦU QUYỀN TRUY CẬP</h3>
+                <p class="text-slate-300 mb-4 text-sm">Vui lòng nhập mật khẩu quản trị viên.</p>
+                <input type="password" id="admin-pwd" class="w-full bg-slate-950 border border-slate-700 text-center text-white p-3 rounded mb-4 focus:border-yellow-500 outline-none" placeholder="***">
+                <div class="flex gap-4">
+                    <button onclick="closePasswordModal()" class="btn-neon border-slate-500 text-slate-400 w-1/2">HỦY</button>
+                    <button onclick="verifyPassword()" class="btn-neon btn-neon-gold w-1/2">XÁC NHẬN</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts & Confirm -->
+        <div id="alert-modal" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4">
+            <div class="bg-slate-900 border-2 border-cyan-500 p-6 rounded-xl max-w-sm w-full text-center shadow-[0_0_20px_#00f3ff]">
+                <h3 class="font-sci-fi text-cyan-400 text-xl mb-4">THÔNG BÁO</h3>
+                <p id="alert-msg" class="text-slate-200 mb-6 font-mono"></p>
+                <button onclick="closeAlert()" class="btn-neon px-6 py-2 w-full">ĐÃ RÕ</button>
+            </div>
+        </div>
+
+        <div id="confirm-modal" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4">
+            <div class="bg-slate-900 border-2 border-red-500 p-6 rounded-xl max-w-sm w-full text-center shadow-[0_0_20px_#ef4444]">
+                <h3 class="font-sci-fi text-red-400 text-xl mb-4">XÁC NHẬN</h3>
+                <p id="confirm-msg" class="text-slate-200 mb-6 font-mono"></p>
+                <div class="flex gap-4">
+                    <button onclick="closeConfirm()" class="btn-neon border-slate-500 text-slate-400 w-1/2">HỦY</button>
+                    <button id="confirm-yes-btn" class="btn-neon border-red-500 text-red-400 hover:bg-red-500 w-1/2">ĐỒNG Ý</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="text-import-modal" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4">
+            <div class="bg-slate-900 border border-purple-500 p-6 rounded-xl max-w-2xl w-full flex flex-col h-[80vh]">
+                <h3 class="font-sci-fi text-purple-400 text-xl mb-2">NHẬP VĂN BẢN</h3>
+                <p class="text-xs text-slate-400 mb-4">Định dạng: Câu hỏi -> 4 đáp án (A,B,C,D) -> Đáp án. Cách nhau 1 dòng trống.</p>
+                <textarea id="bulk-text" class="w-full flex-1 bg-slate-950 border border-slate-700 text-slate-300 p-4 font-mono text-sm rounded outline-none mb-4"></textarea>
+                <div class="flex gap-4 justify-end">
+                    <button onclick="closeTextImportModal()" class="btn-neon border-slate-500 text-slate-400 px-4 py-2">HỦY</button>
+                    <button onclick="processBulkText()" class="btn-neon btn-neon-purple px-4 py-2">LƯU VÀO DB</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chest Reveal Modal -->
+        <div id="chest-reveal-modal" class="hidden fixed inset-0 bg-black/90 z-[110] flex items-center justify-center p-4">
+            <div class="bg-slate-900 border-2 border-yellow-400 p-8 rounded-xl max-w-md w-full text-center shadow-[0_0_40px_#fbbf24] transform scale-0 transition-transform duration-300" id="chest-reveal-box">
+                <div class="text-6xl mb-4">🎁</div>
+                <h3 class="font-sci-fi text-yellow-400 text-2xl mb-2 uppercase">KẾT QUẢ MỞ RƯƠNG</h3>
+                <p id="chest-reveal-msg" class="text-white text-lg font-bold mb-6 font-mono"></p>
+                <button onclick="closeChestReveal()" class="btn-neon btn-neon-gold px-8 py-3 w-full font-bold">XÁC NHẬN ĐIỂM</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= JAVASCRIPT ================= -->
+    <script>
+        // System Data
+        const DB_KEY = 'cttl2070_questions';
+        const LB_KEY = 'cttl2070_leaderboard';
+        let questions = JSON.parse(localStorage.getItem(DB_KEY)) || [
+            { 
+                question: "Câu 1. Nhiên liệu là những chất", 
+                options: ["A. có khả năng cháy và khi cháy tỏa nhiệt, được sử dụng để cung cấp năng lượng.", "B. chỉ có khả năng tan trong nước.", "C. chỉ tồn tại ở thể rắn.", "D. không thể tham gia phản ứng hóa học."], 
+                correctIndex: 0 
+            },
+            { 
+                question: "Câu 2. Nhiên liệu nào sau đây thuộc loại nhiên liệu lỏng?", 
+                options: ["A. Than đá.", "B. Củi.", "C. Xăng.", "D. Khí thiên nhiên."], 
+                correctIndex: 2 
+            },
+            { 
+                question: "Câu 3. Khi sử dụng nhiên liệu, cần thực hiện nguyên tắc nào sau đây?", 
+                options: ["A. Sử dụng đúng mục đích, an toàn, tiết kiệm và hạn chế tác động xấu đến môi trường.", "B. Sử dụng càng nhiều càng tốt.", "C. Đốt nhiên liệu trong mọi điều kiện.", "D. Không cần quan tâm đến chất thải."], 
+                correctIndex: 0 
+            },
+            { 
+                question: "Câu 4. Vì sao khí thiên nhiên thường được xem là nhiên liệu hóa thạch?", 
+                options: ["A. Vì khí thiên nhiên không chứa hợp chất carbon.", "B. Vì khí thiên nhiên được sản xuất trực tiếp từ nước.", "C. Vì khí thiên nhiên được tạo ra trong phòng thí nghiệm.", "D. Vì khí thiên nhiên được hình thành từ các vật chất hữu cơ bị biến đổi trong thời gian địa chất rất dài."], 
+                correctIndex: 3 
+            },
+            { 
+                question: "Câu 5. Khi đốt củi, muốn củi cháy tốt hơn có thể", 
+                options: ["A. xếp củi thông thoáng để không khí tiếp xúc tốt với củi.", "B. ngâm củi trong nước trước khi đốt.", "C. phủ kín củi bằng đất.", "D. giảm hoàn toàn lượng không khí cung cấp."], 
+                correctIndex: 0 
+            }
+        ];
+        
+        // Game State
+        let currentQIndex = 0; let score = 0; let points = 0; let playerName = ""; let isAnswering = false;
+
+        // Audio System
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+            if (type === 'correct') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(1000, now + 0.1);
+                gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.5, now+0.05); gain.gain.exponentialRampToValueAtTime(0.01, now+0.4);
+                osc.start(now); osc.stop(now + 0.4);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(80, now + 0.3);
+                gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.3, now+0.05); gain.gain.exponentialRampToValueAtTime(0.01, now+0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'chest') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(300, now); osc.frequency.setValueAtTime(600, now+0.1); osc.frequency.setValueAtTime(900, now+0.2);
+                gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.2, now+0.05); gain.gain.exponentialRampToValueAtTime(0.01, now+0.5);
+                osc.start(now); osc.stop(now + 0.5);
+            }
+        }
+
+        // Init QR Code
+        window.onload = () => {
+            new QRCode(document.getElementById("qrcode-container"), { text: window.location.href, width: 128, height: 128, colorDark: "#00f3ff", colorLight: "#ffffff" });
+        };
+
+        // UI Navigation
+        function hideAll() {
+            ['menu-screen', 'intro-screen', 'quiz-screen', 'end-screen', 'db-screen', 'leaderboard-screen', 'chest-screen'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+        }
+        function returnToMenu() { hideAll(); document.getElementById('menu-screen').classList.remove('hidden'); }
+        function showAlert(msg) { document.getElementById('alert-msg').innerText = msg; document.getElementById('alert-modal').classList.remove('hidden'); }
+        function closeAlert() { document.getElementById('alert-modal').classList.add('hidden'); }
+        function showConfirm(msg, action) { document.getElementById('confirm-msg').innerText = msg; document.getElementById('confirm-modal').classList.remove('hidden'); document.getElementById('confirm-yes-btn').onclick = () => { action(); closeConfirm(); }; }
+        function closeConfirm() { document.getElementById('confirm-modal').classList.add('hidden'); }
+        function openSettings() { showConfirm("Bạn muốn tạm dừng và thoát về Menu? (Mất kết quả hiện tại)", returnToMenu); }
+
+        // Security / Password System
+        let pwdTarget = '';
+        function requirePassword(target) {
+            pwdTarget = target;
+            document.getElementById('admin-pwd').value = '';
+            document.getElementById('password-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('admin-pwd').focus(), 100);
+        }
+        function closePasswordModal() { document.getElementById('password-modal').classList.add('hidden'); }
+        function verifyPassword() {
+            const pwd = document.getElementById('admin-pwd').value;
+            closePasswordModal();
+            if (pwdTarget === 'leaderboard' && pwd === '123') {
+                showLeaderboard();
+            } else if (pwdTarget === 'chests' && pwd === '456') {
+                showChestScreen();
+            } else if (pwdTarget === 'reset-chests' && pwd === '654') {
+                resetChests();
+            } else {
+                showAlert("Mật khẩu không chính xác. Yêu cầu bị từ chối.");
+            }
+        }
+
+        // Intro & Quiz
+        let typeTimeout;
+        const introText = ["NOVA: Mức dự trữ cạn kiệt! Hệ thống duy trì sự sống đang sập!", "KIAN: Khóa mục tiêu năm 2026. Bắt đầu truyền năng lượng ngay!"];
+        function showIntro() {
+            playerName = document.getElementById('player-name').value.trim();
+            if (!playerName) return showAlert("Nhập tên phi hành gia để khởi động!");
+            if (questions.length === 0) return showAlert("Cơ sở dữ liệu trống.");
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            hideAll(); document.getElementById('intro-screen').classList.remove('hidden');
+            document.getElementById('btn-skip-intro').classList.add('hidden');
+            document.getElementById('dialogue-1').innerText = ""; document.getElementById('dialogue-2').innerText = "";
+            typeWriter(0, 0);
+        }
+        function typeWriter(dIndex, charIndex) {
+            if (dIndex >= introText.length) { document.getElementById('btn-skip-intro').classList.remove('hidden'); return; }
+            const text = introText[dIndex].split(": ")[1];
+            if (charIndex < text.length) {
+                document.getElementById(`dialogue-${dIndex+1}`).innerHTML += text.charAt(charIndex);
+                typeTimeout = setTimeout(() => typeWriter(dIndex, charIndex + 1), 30);
+            } else {
+                typeTimeout = setTimeout(() => typeWriter(dIndex + 1, 0), 500);
+            }
+        }
+
+        function startQuiz() {
+            clearTimeout(typeTimeout); currentQIndex = 0; score = 0; points = 0; isAnswering = false;
+            hideAll(); document.getElementById('quiz-screen').classList.remove('hidden');
+            loadQuestion();
+        }
+        function loadQuestion() {
+            isAnswering = false; const q = questions[currentQIndex];
+            document.getElementById('question-text').innerText = q.question;
+            for(let i=0; i<4; i++) {
+                const btn = document.getElementById(`btn-${i}`);
+                btn.className = 'option-btn p-4 text-lg'; btn.innerText = q.options[i];
+            }
+            updateUI();
+        }
+        function checkAnswer(idx) {
+            if (isAnswering) return;
+            isAnswering = true;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const q = questions[currentQIndex], btn = document.getElementById(`btn-${idx}`), correctBtn = document.getElementById(`btn-${q.correctIndex}`);
+            if (idx === q.correctIndex) {
+                btn.classList.add('correct'); playSound('correct'); score++; points += 10;
+                spawnFloatingPoints();
+            } else {
+                btn.classList.add('wrong'); correctBtn.classList.add('correct'); playSound('wrong');
+            }
+            updateUI();
+            setTimeout(() => {
+                currentQIndex++;
+                if (currentQIndex < questions.length) loadQuestion(); else showEnd();
+            }, 1500);
+        }
+        function spawnFloatingPoints() {
+            const container = document.getElementById('q-container'), floater = document.createElement('div');
+            floater.className = 'floating-points'; floater.innerText = '+10 ĐIỂM'; container.appendChild(floater);
+            setTimeout(() => floater.remove(), 1200);
+        }
+        function updateUI() {
+            document.getElementById('question-counter').innerText = `Câu ${Math.min(currentQIndex+1, questions.length)} / ${questions.length}`;
+            document.getElementById('score-display').innerText = `Điểm: ${points}`;
+            const pct = questions.length ? (currentQIndex / questions.length) * 100 : 0;
+            document.getElementById('progress-fill').style.width = `${pct}%`;
+            document.getElementById('progress-text').innerText = `${Math.round(pct)}%`;
+        }
+        function showEnd() {
+            hideAll(); document.getElementById('end-screen').classList.remove('hidden');
+            document.getElementById('final-points').innerText = points;
+            let lb = JSON.parse(localStorage.getItem(LB_KEY)) || [];
+            lb.push({ name: playerName, points: points }); lb.sort((a, b) => b.points - a.points);
+            localStorage.setItem(LB_KEY, JSON.stringify(lb));
+        }
+
+        // Leaderboard
+        function showLeaderboard() {
+            hideAll(); document.getElementById('leaderboard-screen').classList.remove('hidden');
+            const tbody = document.getElementById('lb-body'); tbody.innerHTML = '';
+            let lb = JSON.parse(localStorage.getItem(LB_KEY)) || [];
+            if (lb.length === 0) { tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-slate-500">Chưa có dữ liệu</td></tr>`; return; }
+            lb.forEach((row, i) => {
+                let color = "text-slate-400", icon = "";
+                if (i===0) { color="text-yellow-400 font-bold"; icon="🥇 "; } else if (i===1) { color="text-slate-300 font-bold"; icon="🥈 "; } else if (i===2) { color="text-amber-600 font-bold"; icon="🥉 "; }
+                tbody.innerHTML += `<tr class="border-b border-slate-800"><td class="py-2 ${color}">${icon}${i+1}</td><td class="py-2 text-cyan-300">${row.name}</td><td class="py-2 text-right text-green-400 font-bold">${row.points}</td></tr>`;
+            });
+        }
+        function clearLeaderboard() { showConfirm("Xóa sạch Bảng Xếp Hạng?", () => { localStorage.removeItem(LB_KEY); showLeaderboard(); }); }
+
+        // DB / Excel / Text Import
+        function showDatabase() { hideAll(); document.getElementById('db-screen').classList.remove('hidden'); renderDB(); }
+        function renderDB() {
+            const list = document.getElementById('db-list'); list.innerHTML = questions.length === 0 ? `<p class="text-slate-500 text-center mt-4">Trống.</p>` : '';
+            questions.forEach((q, i) => {
+                list.innerHTML += `<div class="mb-4 pb-4 border-b border-slate-700 text-sm"><p class="text-white font-medium mb-1">Câu ${i+1}: ${q.question}</p><div class="text-slate-400 grid grid-cols-2 gap-1">${q.options.map((opt, idx) => `<span class="${idx===q.correctIndex?'text-green-400 font-bold':''}">${opt}</span>`).join('')}</div></div>`;
+            });
+        }
+        function clearDatabase() { showConfirm("Xóa toàn bộ câu hỏi?", () => { questions = []; localStorage.setItem(DB_KEY, JSON.stringify(questions)); renderDB(); }); }
+        function handleExcelUpload(e) {
+            const file = e.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const data = XLSX.utils.sheet_to_json(XLSX.read(evt.target.result, {type: 'array'}).Sheets[XLSX.read(evt.target.result, {type: 'array'}).SheetNames[0]], {header: 1});
+                    let parsed = [];
+                    for(let i=1; i<data.length; i++) {
+                        let r = data[i];
+                        if(r && r[0] && r.length >= 6) {
+                            let ans = String(r[5]).trim().toUpperCase(), cIdx = ans==='A'?0:ans==='B'?1:ans==='C'?2:ans==='D'?3:0;
+                            parsed.push({ question: r[0], options: ["A. "+r[1], "B. "+r[2], "C. "+r[3], "D. "+r[4]], correctIndex: cIdx });
+                        }
+                    }
+                    if(parsed.length) { questions = parsed; localStorage.setItem(DB_KEY, JSON.stringify(questions)); renderDB(); showAlert(`Đã nạp ${questions.length} câu.`); }
+                } catch(err) { showAlert("Lỗi Excel."); }
+            }; reader.readAsArrayBuffer(file);
+        }
+        function openTextImportModal() { document.getElementById('text-import-modal').classList.remove('hidden'); document.getElementById('bulk-text').value = ''; }
+        function closeTextImportModal() { document.getElementById('text-import-modal').classList.add('hidden'); }
+        function processBulkText() {
+            const text = document.getElementById('bulk-text').value.trim(); if(!text) return;
+            let addedCount = 0;
+            text.split(/\n\s*\n/).forEach(block => {
+                const lines = block.split('\n').map(l => l.trim()).filter(l => l);
+                if (lines.length >= 6) {
+                    let ansLine = lines[5].toUpperCase(), cIdx = 0;
+                    if(ansLine.includes('B')) cIdx = 1; else if(ansLine.includes('C')) cIdx = 2; else if(ansLine.includes('D')) cIdx = 3;
+                    questions.push({ question: lines[0], options: [lines[1].startsWith("A.")?lines[1]:"A. "+lines[1], lines[2].startsWith("B.")?lines[2]:"B. "+lines[2], lines[3].startsWith("C.")?lines[3]:"C. "+lines[3], lines[4].startsWith("D.")?lines[4]:"D. "+lines[4]], correctIndex: cIdx });
+                    addedCount++;
+                }
+            });
+            if (addedCount > 0) { localStorage.setItem(DB_KEY, JSON.stringify(questions)); closeTextImportModal(); renderDB(); showAlert(`Đã thêm ${addedCount} câu.`); }
+        }
+
+        // ================= LUCKY CHESTS MINIGAME =================
+        let chestData = [];
+        let teamOpens = { 1: 0, 2: 0, 3: 0, 4: 0 };
+        
+        function showChestScreen() {
+            hideAll(); document.getElementById('chest-screen').classList.remove('hidden');
+            initChests(); updateChestTurnInfo();
+        }
+
+        function initChests() {
+            // Types: +100 (2x), -50 (2x), x2 (1x), /2 (1x), steal1 (1x), steal2 (1x), steal3 (1x), steal4 (1x)
+            let rawData = [
+                { id: 'add100', text: '+100 ĐIỂM' }, { id: 'add100', text: '+100 ĐIỂM' },
+                { id: 'sub50', text: '-50 ĐIỂM' }, { id: 'sub50', text: '-50 ĐIỂM' },
+                { id: 'mul2', text: 'NHÂN ĐÔI (X2) ĐIỂM' }, { id: 'div2', text: 'CHIA ĐÔI (/2) ĐIỂM' },
+                { id: 'steal1', text: 'CƯỚP 50 ĐIỂM CỦA ĐỘI 1' }, { id: 'steal2', text: 'CƯỚP 50 ĐIỂM CỦA ĐỘI 2' },
+                { id: 'steal3', text: 'CƯỚP 50 ĐIỂM CỦA ĐỘI 3' }, { id: 'steal4', text: 'CƯỚP 50 ĐIỂM CỦA ĐỘI 4' }
+            ];
+            // Shuffle
+            for (let i = rawData.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [rawData[i], rawData[j]] = [rawData[j], rawData[i]];
+            }
+            chestData = rawData.map(c => ({ ...c, opened: false }));
+            teamOpens = { 1: 0, 2: 0, 3: 0, 4: 0 };
+            renderChestGrid();
+        }
+
+        function updateChestTurnInfo() {
+            const team = document.getElementById('chest-team-select').value;
+            document.getElementById('chest-turn-info').innerText = `Đã mở: ${teamOpens[team]}/2`;
+        }
+
+        function renderChestGrid() {
+            const grid = document.getElementById('chest-grid');
+            grid.innerHTML = '';
+            chestData.forEach((chest, idx) => {
+                grid.innerHTML += `
+                    <div class="chest-box ${chest.opened ? 'opened' : ''}" onclick="openChest(${idx})">
+                        <div class="chest-icon">📦</div>
+                    </div>`;
+            });
+        }
+
+        function openChest(idx) {
+            if (chestData[idx].opened) return;
+            const currentTeam = document.getElementById('chest-team-select').value;
+            
+            if (teamOpens[currentTeam] >= 2) {
+                return showAlert(`Đội ${currentTeam} đã hết lượt mở rương (Tối đa 2 rương/đội)!`);
+            }
+
+            // Open logic
+            playSound('chest');
+            chestData[idx].opened = true;
+            teamOpens[currentTeam]++;
+            renderChestGrid();
+            updateChestTurnInfo();
+
+            const chest = chestData[idx];
+            applyChestLogic(currentTeam, chest);
+            
+            // Show Reveal Modal
+            document.getElementById('chest-reveal-msg').innerText = chest.text;
+            document.getElementById('chest-reveal-msg').style.color = chest.id.includes('sub') || chest.id.includes('div') ? '#ef4444' : '#22c55e';
+            
+            const modal = document.getElementById('chest-reveal-modal');
+            const box = document.getElementById('chest-reveal-box');
+            modal.classList.remove('hidden');
+            setTimeout(() => { box.classList.remove('scale-0'); box.classList.add('scale-100'); }, 10);
+        }
+
+        function closeChestReveal() {
+            const box = document.getElementById('chest-reveal-box');
+            box.classList.remove('scale-100'); box.classList.add('scale-0');
+            setTimeout(() => { document.getElementById('chest-reveal-modal').classList.add('hidden'); }, 300);
+        }
+
+        function applyChestLogic(currentTeam, chest) {
+            const currentInput = document.getElementById(`score-t${currentTeam}`);
+            let curVal = parseInt(currentInput.value) || 0;
+
+            if (chest.id === 'add100') curVal += 100;
+            else if (chest.id === 'sub50') curVal -= 50;
+            else if (chest.id === 'mul2') curVal *= 2;
+            else if (chest.id === 'div2') curVal = Math.floor(curVal / 2);
+            else if (chest.id.startsWith('steal')) {
+                const targetTeam = chest.id.replace('steal', '');
+                if (targetTeam !== currentTeam) {
+                    const targetInput = document.getElementById(`score-t${targetTeam}`);
+                    let targetVal = parseInt(targetInput.value) || 0;
+                    curVal += 50;
+                    targetInput.value = targetVal - 50;
+                }
+                // If steal from self, nothing happens basically.
+            }
+            currentInput.value = curVal;
+        }
+
+        function resetChests() {
+            document.getElementById('score-t1').value = 0;
+            document.getElementById('score-t2').value = 0;
+            document.getElementById('score-t3').value = 0;
+            document.getElementById('score-t4').value = 0;
+            initChests();
+            updateChestTurnInfo();
+            showAlert("Đã làm mới toàn bộ 10 rương, lượt mở và điểm số 4 đội!");
+        }
+
+    </script>
+</body>
+</html>
